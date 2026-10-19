@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}سجل التدقيق{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">سجل التدقيق</h1>
+  <div class="d-flex gap-2">
+    <form method="post" action="{{ url_for('integrity_verify_all') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-success" type="submit">فحص سلامة ملفات المرضى</button>
+    </form>
+    <form method="post" action="{{ url_for('audit_verify') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-primary" type="submit">التحقق من سلامة السجل</button>
+    </form>
+  </div>
+</div>
+<p class="text-muted small">آخر 200 عملية. كل سجل مرتبط بتجزئة السجل الذي قبله، فأي تعديل لاحق يظهر عند التحقق.</p>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>#</th><th>الوقت (UTC)</th><th>المستخدم</th><th>العملية</th><th>الكيان</th><th>التفاصيل</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r['id'] }}</td>
+          <td dir="ltr" class="text-end">{{ r['created_at'] }}</td>
+          <td dir="ltr" class="text-end">{{ r['username'] or '—' }}</td>
+          <td><span class="badge text-bg-light border">{{ r['action'] }}</span></td>
+          <td>{{ r['entity'] or '' }}{% if r['entity_id'] %} #{{ r['entity_id'] }}{% endif %}</td>
+          <td>{{ r['details'] or '' }}</td>
+          <td dir="ltr" class="text-end">{{ r['ip'] or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

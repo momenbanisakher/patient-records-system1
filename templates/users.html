@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}المستخدمون{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">إدارة المستخدمين</h1>
+
+<div class="card mb-4">
+  <div class="card-header fw-bold">إضافة مستخدم</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('user_new') }}" class="row g-2" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="col-md-3">
+        <label class="form-label small" for="username">اسم المستخدم</label>
+        <input class="form-control" id="username" name="username" dir="ltr" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small" for="full_name">الاسم الكامل</label>
+        <input class="form-control" id="full_name" name="full_name" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small" for="role">الدور</label>
+        <select class="form-select" id="role" name="role" required>
+          {% for key, label in ROLES.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small" for="password">كلمة المرور</label>
+        <input class="form-control" id="password" name="password" type="password" dir="ltr" required>
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">إضافة</button>
+      </div>
+    </form>
+    <div class="form-text">كلمة المرور: 8 أحرف على الأقل وتحتوي على حروف وأرقام.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light"><tr><th>المستخدم</th><th>الاسم</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td dir="ltr" class="text-end">{{ u['username'] }}</td>
+          <td>{{ u['full_name'] }}</td>
+          <td>{{ ROLES[u['role']] }}</td>
+          <td>
+            {% if u['is_active'] %}<span class="badge text-bg-success">فعّال</span>
+            {% else %}<span class="badge text-bg-secondary">معطّل</span>{% endif %}
+            {% if u['locked_until'] %}<span class="badge text-bg-warning">مقفل مؤقتًا</span>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex flex-wrap gap-2">
+              {% if u['id'] != g.user['id'] %}
+              <form method="post" action="{{ url_for('user_toggle', user_id=u['id']) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-secondary" type="submit">{{ 'تعطيل' if u['is_active'] else 'تفعيل' }}</button>
+              </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('user_reset_password', user_id=u['id']) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input class="form-control form-control-sm" name="password" type="password" dir="ltr"
+                       placeholder="كلمة مرور جديدة" required autocomplete="new-password">
+                <button class="btn btn-sm btn-outline-primary" type="submit">تغيير</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

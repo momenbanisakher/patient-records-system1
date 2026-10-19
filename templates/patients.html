@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}المرضى{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">المرضى</h1>
+  {% if can('patients.create') %}
+  <a class="btn btn-primary" href="{{ url_for('patient_new') }}">+ مريض جديد</a>
+  {% endif %}
+</div>
+
+<form method="get" class="mb-3" id="searchForm">
+  <input class="form-control form-control-lg" type="search" name="q" id="searchInput"
+         value="{{ q }}" placeholder="ابحث بالاسم أو رقم الملف أو الهاتف أو الرقم الوطني..."
+         data-search-url="{{ url_for('api_patients_search') }}" autocomplete="off">
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>رقم الملف</th><th>الاسم</th><th>تاريخ الميلاد</th><th>الجنس</th><th>الهاتف</th></tr>
+      </thead>
+      <tbody id="patientsBody">
+        {% for p in patients %}
+        <tr>
+          <td dir="ltr" class="text-end">{{ p['file_no'] }}</td>
+          <td><a href="{{ url_for('patient_detail', patient_id=p['id']) }}">{{ p['full_name'] }}</a></td>
+          <td>{{ p['dob'] }}</td>
+          <td>{{ GENDERS[p['gender']] }}</td>
+          <td dir="ltr" class="text-end">{{ p['phone'] or '' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">لا توجد نتائج.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<nav class="d-flex justify-content-between mt-3" id="pager">
+  {% if page > 1 %}
+  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients_list', q=q, page=page-1) }}">→ السابق</a>
+  {% else %}<span></span>{% endif %}
+  {% if has_next %}
+  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('patients_list', q=q, page=page+1) }}">التالي ←</a>
+  {% endif %}
+</nav>
+{% endblock %}

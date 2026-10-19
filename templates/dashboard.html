@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}الرئيسية{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">مرحبًا، {{ g.user['full_name'] }}</h1>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card"><div class="card-body">
+      <div class="stat-number">{{ stats.patients }}</div><div class="text-muted">إجمالي المرضى</div>
+    </div></div>
+  </div>
+  {% if can('visits.view') %}
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card"><div class="card-body">
+      <div class="stat-number">{{ stats.visits_today }}</div><div class="text-muted">زيارات اليوم</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card"><div class="card-body">
+      <div class="stat-number">{{ stats.visits_total }}</div><div class="text-muted">إجمالي الزيارات</div>
+    </div></div>
+  </div>
+  {% endif %}
+  {% if can('users.manage') %}
+  <div class="col-6 col-lg-3">
+    <div class="card stat-card"><div class="card-body">
+      <div class="stat-number">{{ stats.users }}</div><div class="text-muted">المستخدمون الفعّالون</div>
+    </div></div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header fw-bold">آخر المرضى المسجلين</div>
+      <ul class="list-group list-group-flush">
+        {% for p in recent_patients %}
+        <li class="list-group-item d-flex justify-content-between">
+          <a href="{{ url_for('patient_detail', patient_id=p['id']) }}">{{ p['full_name'] }}</a>
+          <span class="text-muted small" dir="ltr">{{ p['file_no'] }}</span>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">لا يوجد مرضى بعد.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% if can('visits.view') %}
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header fw-bold">آخر الزيارات</div>
+      <ul class="list-group list-group-flush">
+        {% for v in recent_visits %}
+        <li class="list-group-item">
+          <a href="{{ url_for('patient_detail', patient_id=v['patient_id']) }}">{{ v['full_name'] }}</a>
+          <div class="small text-muted">{{ v['visit_date'] }} · {{ v['complaint'] }}</div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">لا توجد زيارات بعد.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

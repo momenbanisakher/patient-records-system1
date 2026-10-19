@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ 'مريض جديد' if mode == 'new' else 'تعديل بيانات المريض' }}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">
+  {{ 'تسجيل مريض جديد' if mode == 'new' else 'تعديل بيانات المريض' }}
+  {% if mode == 'edit' %}<small class="text-muted" dir="ltr">{{ p.file_no }}</small>{% endif %}
+</h1>
+
+<form method="post" class="card card-body" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="full_name">الاسم الكامل *</label>
+      <input class="form-control" id="full_name" name="full_name" value="{{ p.full_name or '' }}" required>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="dob">تاريخ الميلاد *</label>
+      <input class="form-control" id="dob" name="dob" type="date" value="{{ p.dob or '' }}" required data-max-today>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label" for="gender">الجنس *</label>
+      <select class="form-select" id="gender" name="gender" required>
+        <option value="">اختر...</option>
+        {% for key, label in GENDERS.items() %}
+        <option value="{{ key }}" {{ 'selected' if p.gender == key }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="national_id">الرقم الوطني
+        {% if mode == 'edit' and p.national_id_last4 %}<small class="text-muted">(محفوظ: ******{{ p.national_id_last4 }}، اتركه فارغًا للإبقاء عليه)</small>{% endif %}
+      </label>
+      <input class="form-control" id="national_id" name="national_id" inputmode="numeric" maxlength="10" dir="ltr"
+             value="{{ p.national_id or '' }}" autocomplete="off">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="phone">الهاتف</label>
+      <input class="form-control" id="phone" name="phone" type="tel" dir="ltr" value="{{ p.phone or '' }}">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="blood_type">فصيلة الدم</label>
+      <select class="form-select" id="blood_type" name="blood_type">
+        <option value="">غير معروفة</option>
+        {% for b in BLOOD_TYPES %}
+        <option value="{{ b }}" {{ 'selected' if p.blood_type == b }}>{{ b }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="address">العنوان</label>
+      <input class="form-control" id="address" name="address" value="{{ p.address or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="emergency_contact">هاتف الطوارئ</label>
+      <input class="form-control" id="emergency_contact" name="emergency_contact" dir="ltr" value="{{ p.emergency_contact or '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="allergies">الحساسية</label>
+      <textarea class="form-control" id="allergies" name="allergies" rows="2">{{ p.allergies or '' }}</textarea>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="chronic_conditions">الأمراض المزمنة</label>
+      <textarea class="form-control" id="chronic_conditions" name="chronic_conditions" rows="2">{{ p.chronic_conditions or '' }}</textarea>
+    </div>
+  </div>
+  <div class="mt-4 d-flex gap-2">
+    <button class="btn btn-primary" type="submit">حفظ</button>
+    <a class="btn btn-outline-secondary"
+       href="{{ url_for('patients_list') if mode == 'new' else url_for('patient_detail', patient_id=patient_id) }}">إلغاء</a>
+  </div>
+</form>
+{% endblock %}

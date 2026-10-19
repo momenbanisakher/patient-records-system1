@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}تسجيل الدخول{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-sm mt-5">
+      <div class="card-body p-4">
+        <h1 class="h4 text-center mb-1">🏥 نظام إدارة ملفات المرضى</h1>
+        <p class="text-center text-muted small mb-4">سجّل الدخول للمتابعة</p>
+        <form method="post" autocomplete="off">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label class="form-label" for="username">اسم المستخدم</label>
+            <input class="form-control" id="username" name="username" required autofocus
+                   dir="ltr" autocapitalize="none">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password">كلمة المرور</label>
+            <input class="form-control" id="password" name="password" type="password" required dir="ltr">
+          </div>
+          <button class="btn btn-primary w-100" type="submit">دخول</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

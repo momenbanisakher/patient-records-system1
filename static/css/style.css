@@ -1,0 +1,37 @@
+body {
+  background: #f4f7fb;
+  font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", Arial, sans-serif;
+}
+
+.app-nav {
+  background: linear-gradient(90deg, #0b5ed7, #0a4aa8);
+}
+
+.stat-card {
+  border: 0;
+  border-inline-start: 4px solid #0b5ed7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0b5ed7;
+}
+
+.card {
+  border-color: #e3e9f2;
+}
+
+.card-header {
+  background: #fff;
+}
+
+.table-hover tbody tr:hover {
+  background: #eef4ff;
+}
+
+dt {
+  color: #5b6777;
+  font-weight: 600;
+}

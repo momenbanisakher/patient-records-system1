@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ p['full_name'] }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h4 mb-1">{{ p['full_name'] }}</h1>
+    <span class="badge text-bg-secondary" dir="ltr">{{ p['file_no'] }}</span>
+    {% if integrity.status == 'valid' %}
+    <span class="badge text-bg-success" title="البصمة: {{ integrity.current }}">✔ الملف سليم · بصمة <span dir="ltr">{{ integrity.current[:12] }}</span></span>
+    {% elif integrity.status == 'unverified' %}
+    <span class="badge text-bg-warning">بدون بصمة محفوظة</span>
+    {% endif %}
+  </div>
+  <div class="d-flex gap-2">
+    {% if can('patients.edit') %}
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('patient_edit', patient_id=p['id']) }}">تعديل</a>
+    {% endif %}
+    {% if can('patients.delete') %}
+    <form method="post" action="{{ url_for('patient_delete', patient_id=p['id']) }}"
+          data-confirm="سيتم حذف ملف المريض وكل زياراته ونتائجه نهائيًا. هل أنت متأكد؟">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger btn-sm" type="submit">حذف</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if integrity.status == 'tampered' %}
+<div class="alert alert-danger" role="alert">
+  <strong>⚠ تحذير:</strong> تم اكتشاف تعديل غير مصرح به على هذا الملف خارج النظام
+  (البصمة المحسوبة لا تطابق البصمة المحفوظة). لا تعتمد على بياناته، وأبلغ مدير النظام.
+</div>
+{% endif %}
+
+<div class="card mb-4">
+  <div class="card-header fw-bold">البيانات الأساسية</div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">تاريخ الميلاد</dt><dd class="col-sm-9">{{ p['dob'] }} ({{ p['dob']|age }} سنة)</dd>
+      <dt class="col-sm-3">الجنس</dt><dd class="col-sm-9">{{ GENDERS[p['gender']] }}</dd>
+      <dt class="col-sm-3">الرقم الوطني</dt>
+      <dd class="col-sm-9" dir="ltr" style="text-align:right">{% if p['national_id_last4'] %}******{{ p['national_id_last4'] }}{% else %}—{% endif %}</dd>
+      <dt class="col-sm-3">الهاتف</dt><dd class="col-sm-9" dir="ltr" style="text-align:right">{{ p['phone'] or '—' }}</dd>
+      <dt class="col-sm-3">هاتف الطوارئ</dt><dd class="col-sm-9" dir="ltr" style="text-align:right">{{ p['emergency_contact'] or '—' }}</dd>
+      <dt class="col-sm-3">العنوان</dt><dd class="col-sm-9">{{ p['address'] or '—' }}</dd>
+      <dt class="col-sm-3">فصيلة الدم</dt><dd class="col-sm-9">{{ p['blood_type'] or '—' }}</dd>
+      {% if can('visits.view') %}
+      <dt class="col-sm-3">الحساسية</dt><dd class="col-sm-9">{{ p['allergies'] or '—' }}</dd>
+      <dt class="col-sm-3">الأمراض المزمنة</dt><dd class="col-sm-9">{{ p['chronic_conditions'] or '—' }}</dd>
+      {% endif %}
+    </dl>
+  </div>
+</div>
+
+{% if can('visits.view') %}
+<div class="card mb-4">
+  <div class="card-header fw-bold">الزيارات ({{ visits|length }})</div>
+  {% if can('visits.create') %}
+  <div class="card-body border-bottom">
+    <form method="post" action="{{ url_for('visit_add', patient_id=p['id']) }}" class="row g-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="col-md-3">
+        <label class="form-label small" for="visit_date">تاريخ الزيارة</label>
+        <input class="form-control" id="visit_date" name="visit_date" type="date" value="{{ today }}" required data-max-today>
+      </div>
+      <div class="col-md-9">
+        <label class="form-label small" for="complaint">الشكوى الرئيسية *</label>
+        <input class="form-control" id="complaint" name="complaint" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="diagnosis">التشخيص</label>
+        <input class="form-control" id="diagnosis" name="diagnosis">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="treatment">العلاج</label>
+        <input class="form-control" id="treatment" name="treatment">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="prescription">الوصفة الطبية</label>
+        <input class="form-control" id="prescription" name="prescription">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="notes">ملاحظات</label>
+        <input class="form-control" id="notes" name="notes">
+      </div>
+      <div class="col-12"><button class="btn btn-primary btn-sm" type="submit">إضافة زيارة</button></div>
+    </form>
+  </div>
+  {% endif %}
+  <ul class="list-group list-group-flush">
+    {% for v in visits %}
+    <li class="list-group-item">
+      <div class="d-flex justify-content-between">
+        <strong>{{ v['visit_date'] }}</strong>
+        <span class="text-muted small">{{ v['doctor_name'] or '' }}</span>
+      </div>
+      <div>{{ v['complaint'] }}</div>
+      {% if v['diagnosis'] %}<div class="small"><span class="text-muted">التشخيص:</span> {{ v['diagnosis'] }}</div>{% endif %}
+      {% if v['treatment'] %}<div class="small"><span class="text-muted">العلاج:</span> {{ v['treatment'] }}</div>{% endif %}
+      {% if v['prescription'] %}<div class="small"><span class="text-muted">الوصفة:</span> {{ v['prescription'] }}</div>{% endif %}
+      {% if v['notes'] %}<div class="small"><span class="text-muted">ملاحظات:</span> {{ v['notes'] }}</div>{% endif %}
+    </li>
+    {% else %}
+    <li class="list-group-item text-muted">لا توجد زيارات مسجلة.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if can('labs.view') %}
+<div class="card mb-4">
+  <div class="card-header fw-bold">نتائج الفحوصات ({{ labs|length }})</div>
+  {% if can('labs.create') %}
+  <div class="card-body border-bottom">
+    <form method="post" action="{{ url_for('lab_add', patient_id=p['id']) }}" class="row g-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="col-md-3">
+        <label class="form-label small" for="test_name">اسم الفحص *</label>
+        <input class="form-control" id="test_name" name="test_name" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small" for="result">النتيجة *</label>
+        <input class="form-control" id="result" name="result" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small" for="result_date">التاريخ</label>
+        <input class="form-control" id="result_date" name="result_date" type="date" value="{{ today }}" required data-max-today>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small" for="lab_notes">ملاحظات</label>
+        <input class="form-control" id="lab_notes" name="notes">
+      </div>
+      <div class="col-12"><button class="btn btn-primary btn-sm" type="submit">إضافة نتيجة</button></div>
+    </form>
+  </div>
+  {% endif %}
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead class="table-light"><tr><th>التاريخ</th><th>الفحص</th><th>النتيجة</th><th>ملاحظات</th></tr></thead>
+      <tbody>
+        {% for l in labs %}
+        <tr><td>{{ l['result_date'] }}</td><td>{{ l['test_name'] }}</td><td>{{ l['result'] }}</td><td>{{ l['notes'] or '' }}</td></tr>
+        {% else %}
+        <tr><td colspan="4" class="text-center text-muted py-3">لا توجد نتائج مسجلة.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
