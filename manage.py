@@ -5,6 +5,7 @@
 """
 import argparse
 import getpass
+import os
 import sys
 
 import audit
@@ -57,7 +58,8 @@ DEMO_PATIENTS = [
 
 
 def cmd_seed_demo(app, _args):
-    pw = "Demo12345"
+    custom_pw = os.environ.get("DEMO_PASSWORD")
+    pw = custom_pw or "Demo12345"
     add_user(app, "admin", "مدير النظام", "admin", pw)
     add_user(app, "doctor1", "د. ليلى أحمد", "doctor", pw)
     add_user(app, "nurse1", "ممرض خالد", "nurse", pw)
@@ -97,7 +99,32 @@ def cmd_seed_demo(app, _args):
         for row in db.execute("SELECT id FROM patients").fetchall():
             integrity.update_fingerprint(db, row["id"])
         db.commit()
-        print("تمت إضافة البيانات التجريبية. كلمة مرور كل الحسابات: " + pw)
+        if custom_pw:
+            print("تمت إضافة البيانات التجريبية (كلمة المرور من DEMO_PASSWORD).")
+        else:
+            print("تمت إضافة البيانات التجريبية. كلمة مرور كل الحسابات: " + pw)
+
+
+def bootstrap_from_env(app, env=None):
+    """للنشر على خادم بلا طرفية (مثل Render): ينشئ المدير الأول من متغيرات البيئة.
+
+    ADMIN_PASSWORD  كلمة مرور المدير (تُنشأ فقط إذا لا يوجد أي مستخدم)
+    ADMIN_USERNAME  اسم المدير (الافتراضي admin)
+    DEMO_DATA=1     يضيف حسابات ومرضى تجريبيين (كلمة المرور من DEMO_PASSWORD)
+    """
+    env = os.environ if env is None else env
+    password = env.get("ADMIN_PASSWORD")
+    if password:
+        with app.app_context():
+            users = get_db().execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        if users == 0:
+            errors = check_password_strength(password)
+            if errors:
+                raise SystemExit("ADMIN_PASSWORD ضعيفة: " + " ".join(errors))
+            username = env.get("ADMIN_USERNAME", "admin").strip().lower()
+            add_user(app, username, "مدير النظام", "admin", password)
+    if env.get("DEMO_DATA") == "1":
+        cmd_seed_demo(app, None)
 
 
 def cmd_verify(app, _args):

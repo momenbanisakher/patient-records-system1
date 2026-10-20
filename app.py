@@ -57,9 +57,11 @@ def valid_date(value):
 def create_app(config=None):
     app = Flask(__name__)
     app.config.update(
-        DATABASE=os.path.join(app.instance_path, "patients.db"),
+        DATABASE=os.environ.get("DATABASE_PATH",
+                                os.path.join(app.instance_path, "patients.db")),
         SECRET_KEY=os.environ.get("SECRET_KEY"),
         PBKDF2_ITERATIONS=DEFAULT_ITERATIONS,
+        SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE") == "1",
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
@@ -68,6 +70,7 @@ def create_app(config=None):
         app.config.update(config)
 
     os.makedirs(app.instance_path, exist_ok=True)
+    os.makedirs(os.path.dirname(os.path.abspath(app.config["DATABASE"])), exist_ok=True)
     if not app.config["SECRET_KEY"]:
         key_file = os.path.join(app.instance_path, "secret.key")
         if not os.path.exists(key_file):
