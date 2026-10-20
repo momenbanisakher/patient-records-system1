@@ -24,8 +24,16 @@
   }
 
   var pager = document.getElementById("pager");
+  var searchForm = document.getElementById("searchForm");
   var timer = null;
   var lastQuery = input.value;
+
+  function setSearching(isSearching) {
+    if (!searchForm) {
+      return;
+    }
+    searchForm.classList.toggle("is-searching", isSearching);
+  }
 
   function cell(text, ltr) {
     var td = document.createElement("td");
@@ -71,6 +79,7 @@
     }
     lastQuery = q;
     var url = input.getAttribute("data-search-url") + "?q=" + encodeURIComponent(q);
+    setSearching(true);
     fetch(url, { headers: { Accept: "application/json" }, credentials: "same-origin" })
       .then(function (r) {
         if (!r.ok) {
@@ -89,6 +98,9 @@
       })
       .catch(function () {
         /* نُبقي النتائج الحالية عند الفشل */
+      })
+      .finally(function () {
+        setSearching(false);
       });
   }
 

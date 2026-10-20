@@ -3,26 +3,26 @@
 {% block content %}
 <h1 class="h4 mb-4">مرحبًا، {{ g.user['full_name'] }}</h1>
 
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
+<div class="row g-3 mb-4 dashboard-stats">
+  <div class="col-6 col-lg-3 stat-item">
     <div class="card stat-card"><div class="card-body">
       <div class="stat-number">{{ stats.patients }}</div><div class="text-muted">إجمالي المرضى</div>
     </div></div>
   </div>
   {% if can('visits.view') %}
-  <div class="col-6 col-lg-3">
+  <div class="col-6 col-lg-3 stat-item">
     <div class="card stat-card"><div class="card-body">
       <div class="stat-number">{{ stats.visits_today }}</div><div class="text-muted">زيارات اليوم</div>
     </div></div>
   </div>
-  <div class="col-6 col-lg-3">
+  <div class="col-6 col-lg-3 stat-item">
     <div class="card stat-card"><div class="card-body">
       <div class="stat-number">{{ stats.visits_total }}</div><div class="text-muted">إجمالي الزيارات</div>
     </div></div>
   </div>
   {% endif %}
   {% if can('users.manage') %}
-  <div class="col-6 col-lg-3">
+  <div class="col-6 col-lg-3 stat-item">
     <div class="card stat-card"><div class="card-body">
       <div class="stat-number">{{ stats.users }}</div><div class="text-muted">المستخدمون الفعّالون</div>
     </div></div>
@@ -31,7 +31,7 @@
 </div>
 
 <div class="row g-3">
-  <div class="col-lg-6">
+  <div class="col-lg-6 dashboard-section">
     <div class="card h-100">
       <div class="card-header fw-bold">آخر المرضى المسجلين</div>
       <ul class="list-group list-group-flush">
@@ -47,7 +47,7 @@
     </div>
   </div>
   {% if can('visits.view') %}
-  <div class="col-lg-6">
+  <div class="col-lg-6 dashboard-section">
     <div class="card h-100">
       <div class="card-header fw-bold">آخر الزيارات</div>
       <ul class="list-group list-group-flush">
